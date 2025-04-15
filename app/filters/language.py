@@ -7,6 +7,7 @@ import os
 import traceback
 import re
 
+
 logger = logging.getLogger(__name__)
 
 # Classes de toxicidade (mesmas do test_model.py)

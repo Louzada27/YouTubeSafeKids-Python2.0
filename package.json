@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "sentiment-ptbr": "^1.0.3"
+  }
+}

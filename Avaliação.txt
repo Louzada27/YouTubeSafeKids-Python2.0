@@ -1,0 +1,69 @@
+Resultados da Avaliação do Modelo Sentimento:
+--------------------------------------------------
+Acurácia: 0.7684
+Precisão: 0.7675
+Revocação: 0.7684
+F1-Score: 0.7663
+
+Matriz de Confusão:
+Positivo | Negativo | Neutro
+------------------------------
+  1052   |   292    |   360   
+  118    |   2586   |   254   
+  272    |   195    |   1309  
+
+Métricas por Classe:
+--------------------------------------------------
+
+Positivo:
+  Precisão: 0.7295
+  Revocação: 0.6174
+  F1-Score: 0.6688
+
+Negativo:
+  Precisão: 0.8415
+  Revocação: 0.8742
+  F1-Score: 0.8576
+
+Neutro:
+  Precisão: 0.6807
+  Revocação: 0.7370
+  F1-Score: 0.7078
+
+
+
+Resultados da Avaliação do Modelo ModeloToxidade2.0:
+--------------------------------------------------
+Acurácia: 0.9671
+Precisão: 0.9672
+Revocação: 0.9671
+F1-Score: 0.9671
+
+Matriz de Confusão:
+Não Tóxico | Tóxico
+------------------------------
+   3369    |    131    
+    99     |    3401   
+
+Métricas por Classe:
+--------------------------------------------------
+
+Não Tóxico:
+  Precisão: 0.9715
+  Revocação: 0.9626
+  F1-Score: 0.9670
+
+Tóxico:
+  Precisão: 0.9629
+  Revocação: 0.9717
+  F1-Score: 0.9673
+
+
+  
+PS C:\Users\USER_27\Downloads\YouTubeSafeKids-Python> 
+
+Profanidade/Obscenidade:
+Precision: 76.44%
+Recall: 78.03%
+F1-Score: 77.23%
+Threshold: 0.7

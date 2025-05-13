@@ -94,7 +94,8 @@ class LanguageFilter(BaseFilter):
             text,
             return_tensors="pt",
             padding=True,
-            truncation=False  # Remove a truncagem para processar o texto completo
+            truncation=False,  # Remove a truncagem para processar o texto completo
+            max_length=512
         ).to(self.device)
         
         with torch.no_grad():

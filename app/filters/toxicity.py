@@ -19,6 +19,9 @@ import numpy as np
 from app.filters.base import BaseFilter
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import logging
+from huggingface_hub import login
+from dotenv import load_dotenv
+import os
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -26,6 +29,11 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+
+load_dotenv()
+hf_token = os.getenv("HUGGINGFACE_HUB_TOKEN")
+login(token=hf_token) 
 
 # Mapeamento de rótulos para nomes descritivos
 LABEL_MAP = {

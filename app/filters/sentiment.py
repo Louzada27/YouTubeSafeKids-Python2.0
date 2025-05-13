@@ -11,6 +11,9 @@ from datetime import datetime
 from .base import BaseFilter
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import logging
+from huggingface_hub import login
+from dotenv import load_dotenv
+import os
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -18,6 +21,11 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+load_dotenv()
+hf_token = os.getenv("HUGGINGFACE_HUB_TOKEN")
+login(token=hf_token) 
+
 
 class SentimentFilter(BaseFilter):
     def __init__(self, 
@@ -37,7 +45,7 @@ class SentimentFilter(BaseFilter):
             default_enabled=True
         )
         
-      
+        
         self.model = AutoModelForSequenceClassification.from_pretrained("GargulaCapixava/ModeloLexiconPT")
         self.tokenizer = AutoTokenizer.from_pretrained("GargulaCapixava/ModeloLexiconPT")
         

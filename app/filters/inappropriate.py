@@ -14,6 +14,8 @@ from typing import Dict, List, Tuple, Optional, Any
 import numpy as np
 from app.filters.base import BaseFilter
 
+
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -21,6 +23,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
+
+
 
 class InappropriateFilter(BaseFilter):
     """Filtro para avaliar linguagem inapropriada."""

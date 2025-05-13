@@ -6,10 +6,13 @@ import logging
 import os
 import traceback
 import re
-
+from huggingface_hub import login
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
-
+load_dotenv()
+hf_token = os.getenv("HUGGINGFACE_HUB_TOKEN")
+login(token=hf_token) 
 # Classes de toxicidade (mesmas do test_model.py)
 LABEL_COLUMNS = [
     'health', 'ideology', 'insult', 'lgbtqphobia', 'other_lifestyle',

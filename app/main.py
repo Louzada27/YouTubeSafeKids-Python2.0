@@ -95,4 +95,13 @@ async def home(request: Request):
             "request": request,
             "filters": filter_manager.get_filter_info()
         }
+    )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=settings.PORT,
+        reload=True
     ) 

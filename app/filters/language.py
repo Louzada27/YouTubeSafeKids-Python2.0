@@ -1,275 +1,124 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
-from app.filters.base import BaseFilter
-from typing import Dict, Any, List, Tuple
-import logging
-import os
-import traceback
+from typing import Dict, Any, List, Optional
 import re
-from huggingface_hub import login
-from dotenv import load_dotenv
+from transformers import BertTokenizer
+from abc import ABC, abstractmethod
+import logging
 
 logger = logging.getLogger(__name__)
-load_dotenv()
-hf_token = os.getenv("HUGGINGFACE_HUB_TOKEN")
-login(token=hf_token) 
-# Classes de toxicidade (mesmas do test_model.py)
-LABEL_COLUMNS = [
-    'health', 'ideology', 'insult', 'lgbtqphobia', 'other_lifestyle',
-    'physical_aspects', 'profanity_obscene', 'racism', 'religious_intolerance', 'sexism'
-]
 
-class LanguageFilter(BaseFilter):
-    """Filtro para avaliar a adequação da linguagem do conteúdo."""
+class BaseFilter(ABC):
+    """
+    Classe base para todos os filtros.
+    Define a interface comum que todos os filtros devem implementar.
+    """
     
-    def __init__(self):
-        super().__init__(
-            name="Linguagem",
-            description="Avalia o nível de adequação da linguagem do conteúdo do vídeo",
-            default_enabled=True
-        )
-        self.default_value = 50  # Valor padrão para a barra de adequação
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        default_enabled: bool = True,
+        weight: float = 1.0
+    ):
+        logger.info(f"{self.__class__.__name__} :: def __init__")
+        self.name = name
+        self.description = description
+        self.enabled = default_enabled
+        self.weight = weight
+        self.logger = logging.getLogger(f"filters.{name.lower()}")
+        self.logger.info(f"Initializing {name} filter")
+        self.tokenizer = BertTokenizer.from_pretrained("neuralmind/bert-base-portuguese-cased")
         
-        self.logger = logging.getLogger("filters.language")
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        logger.info(f"Usando dispositivo: {self.device}")
-        
-        self.model = AutoModelForSequenceClassification.from_pretrained("GargulaCapixava/ModeloOLYD-BR")
-        self.tokenizer = AutoTokenizer.from_pretrained("GargulaCapixava/ModeloOLYD-BR")
-        self.model.to(self.device)
-        self.model.eval()
-        
-        # Carrega o dicionário de palavras inadequadas
-        self.inappropriate_words = self._load_dictionary()
-        
-        logger.info("Modelo, tokenizer e dicionário carregados com sucesso")
-    
-    def _load_dictionary(self) -> List[str]:
-        """Carrega o dicionário de palavras inadequadas."""
-        try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-            dict_path = os.path.join(project_root, "app", "nlp", "DicicionarioRegex\dicionario.txt")
-            
-            with open(dict_path, 'r', encoding='utf-8') as f:
-                words = [line.strip().lower() for line in f if line.strip()]
-            
-            logger.info(f"Dicionário carregado com {len(words)} palavras")
-            return words
-        except Exception as e:
-            logger.error(f"Erro ao carregar dicionário: {e}")
-            return []
-    
-    def _check_inappropriate_words(self, text: str) -> Tuple[bool, List[str]]:
+    @abstractmethod
+    def process(self, video: Dict[str, Any]) -> float:
         """
-        Verifica se o texto contém palavras inadequadas do dicionário.
+        Process a video and return a score between 0 and 1.
         
         Args:
-            text: Texto a ser analisado
+            video: Dictionary containing video information
             
         Returns:
-            Tuple[bool, List[str]]: (True se encontrou palavras inadequadas, lista de palavras encontradas)
+            float: Score between 0 and 1
         """
-        text = text.lower()
-        found_words = []
+        pass
         
-        for word in self.inappropriate_words:
-            # Cria um padrão regex que corresponde à palavra com ou sem acentos
-            pattern = re.compile(r'\b' + re.escape(word) + r'\b')
-            if pattern.search(text):
-                found_words.append(word)
-        
-        return len(found_words) > 0, found_words
-    
-    def _predict(self, text: str, threshold: float = 0.15) -> Tuple[List[str], List[float]]:
-        """
-        Faz previsão de toxicidade para um texto.
-        
-        Args:
-            text: Texto a ser analisado
-            threshold: Limiar para considerar uma classe como tóxica (0.15 por padrão)
-            
-        Returns:t
-            Tuple[List[str], List[float]]: Classes tóxicas e suas probabilidades
-        """
-        inputs = self.tokenizer(
-            text,
-            return_tensors="pt",
-            padding=True,
-            truncation=False,  # Remove a truncagem para processar o texto completo
-            max_length=512
-        ).to(self.device)
-        
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            probabilities = torch.sigmoid(outputs.logits)
-        
-        probs = probabilities[0].cpu().numpy()
-        
-        toxic_classes = []
-        toxic_probs = []
-        
-        logger.debug(f"Probabilidades para o texto:")
-        for i, prob in enumerate(probs):
-            logger.debug(f"  {LABEL_COLUMNS[i]}: {prob:.4f}")
-            # Ignora a categoria de insultos
-            if LABEL_COLUMNS[i] == 'insult':
-                continue
-                
-            # Ajusta o threshold para cada categoria
-            if LABEL_COLUMNS[i] == 'profanity_obscene':
-                categoria_threshold = 0.1  # Mais sensível para palavrões
-            else:
-                categoria_threshold = threshold
-            
-            if prob > categoria_threshold:
-                toxic_classes.append(LABEL_COLUMNS[i])
-                toxic_probs.append(float(prob))
-        
-        logger.debug(f"Classes tóxicas encontradas: {toxic_classes}")
-        logger.debug(f"Probabilidades: {toxic_probs}")
-        
-        return toxic_classes, toxic_probs
-    
-    def get_intensity(self) -> float:
-        """
-        Retorna o valor atual da barra de intensidade (0-100).
-        """
-        return self.default_value
-
-    def process(self, video_data):
-        """
-        Processa os dados do vídeo e retorna o score de adequação da linguagem (float).
-        Primeiro verifica palavras inadequadas no dicionário, depois passa pelo modelo se necessário.
-        
-        Args:
-            video_data: Dados do vídeo a serem processados
-        
-        Returns:
-            float: Score de adequação entre 0 e 1
-        """
-        # Verifica se já foi processado antes
-        if 'language_score' in video_data:
-            return video_data['language_score']
-
-        # Se o filtro estiver desativado, retorna 1 (aceita o vídeo)
-        if not self.is_enabled():
-            video_data['language_score'] = 1.0
-            video_data['language_details'] = {
-                'categories': {},
-                'filter_enabled': False
-            }
-            return 1.0
-
-        # Extrai apenas a transcrição do vídeo (tenta ambas as chaves)
-        transcript = video_data.get('transcription', video_data.get('transcript', ''))
-        
-        # Log para debug
-        logger.info(f"Título do vídeo: {video_data.get('title', 'Sem título')}")
-        logger.info(f"ID do vídeo: {video_data.get('video_id', 'Desconhecido')}")
-        logger.info(f"Chaves disponíveis no video_data: {list(video_data.keys())}")
-        logger.info(f"Transcrição disponível: {'Sim' if transcript else 'Não'}")
-        logger.info(f"Tamanho da transcrição: {len(transcript)} caracteres")
-
-        # Rejeita vídeos sem transcrição
-        if not transcript or not transcript.strip():
-            logger.warning("Transcrição vazia ou não disponível - Rejeitando vídeo")
-            video_data['language_score'] = 0.0  # Rejeita o vídeo
-            video_data['language_details'] = {
-                'categories': {},
-                'rejection_reason': 'Sem transcrição disponível',
-                'filter_enabled': True
-            }
-            return 0.0  # Retorna 0 para rejeitar o vídeo
-
-        try:
-            # Primeiro verifica palavras inadequadas no dicionário
-            found_inappropriate, inappropriate_words = self._check_inappropriate_words(transcript)
-            
-            if found_inappropriate:
-                logger.warning(f"Palavras inadequadas encontradas: {inappropriate_words}")
-                video_data['language_score'] = 0.0  # Rejeita o vídeo
-                video_data['language_details'] = {
-                    'categories': {},
-                    'inappropriate_words': inappropriate_words,
-                    'rejection_reason': 'Palavras inadequadas encontradas no dicionário',
-                    'filter_enabled': True
-                }
-                return 0.0  # Retorna 0 para rejeitar o vídeo
-            
-            # Se não encontrou palavras inadequadas, passa pelo modelo
-            toxic_classes, toxic_probs = self._predict(transcript)
-            
-            # Calcula o score baseado na maior probabilidade tóxica (exceto insultos)
-            if toxic_probs:
-                max_toxicity = max(toxic_probs) * 100  # Converte para porcentagem
-                logger.info(f"Toxicidade máxima encontrada: {max_toxicity:.2f}%")
-                
-                # Calcula o score do vídeo (inverso da toxicidade)
-                video_score = 100.0 - max_toxicity
-                logger.info(f"Score do vídeo (100 - toxicidade): {video_score:.2f}%")
-                
-                # Normaliza para um valor entre 0 e 1
-                normalized_score = video_score / 100.0
-                logger.info(f"Score normalizado (0-1): {normalized_score:.4f}")
-
-                # Define thresholds para níveis de toxicidade
-                toxicity_level = "baixa"
-                if max_toxicity >= 80:  # 80% ou mais de toxicidade
-                    toxicity_level = "alta"
-                elif max_toxicity >= 50:  # 50% ou mais de toxicidade
-                    toxicity_level = "média"
-
-                # Obtém o valor atual da barra de intensidade (0-100)
-                intensity = self.get_intensity()
-                logger.info(f"Intensidade do filtro: {intensity}%")
-
-              
-            
-                
-                # Armazena os resultados para uso futuro
-                video_data['language_score'] = normalized_score
-                video_data['language_details'] = {
-                    'categories': dict(zip(toxic_classes, toxic_probs)),
-                    'toxicity_level': toxicity_level,
-                    'video_score': video_score,  # Score do vídeo (0-100)
-                    'normalized_score': normalized_score,  # Score normalizado (0-1)
-                    'filter_intensity': intensity,
-                    'filter_enabled': True,
-                    'min_threshold': intensity  # Threshold mínimo aceito
-                }
-
-                return normalized_score
-            else:
-                # Se não encontrou toxicidade, retorna score máximo
-                video_data['language_score'] = 1.0
-                video_data['language_details'] = {
-                    'categories': {},
-                    'video_score': 100.0,
-                    'normalized_score': 1.0,
-                    'filter_enabled': True
-                }
-                return 1.0
-                
-        except Exception as e:
-            logger.error(f"Erro ao processar vídeo: {e}")
-            logger.error(traceback.format_exc())
-            video_data['language_score'] = 0.0
-            video_data['language_details'] = {
-                'error': str(e),
-                'filter_enabled': True
-            }
-            return 0.0
-
+    @abstractmethod
     def get_filter_info(self) -> Dict[str, Any]:
         """
-        Retorna informações sobre o filtro.
+        Get information about the filter.
+        
+        Returns:
+            Dict[str, Any]: Filter information including name, description, and options
         """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "enabled": self.is_enabled(),
-            "type": "language",
-            "default_value": self.default_value,
-        } 
+        pass
+        
+    def is_enabled(self) -> bool:
+        logger.info(f"{self.__class__.__name__} :: def is_enabled")
+        """Check if the filter is enabled."""
+        return self.enabled
+    
+    def set_enabled(self, enabled: bool) -> None:
+        logger.info(f"{self.__class__.__name__} :: def set_enabled")
+        """Enable or disable the filter."""
+        self.enabled = enabled
+        self.logger.info(f"{self.name} filter {'enabled' if enabled else 'disabled'}")
+    
+    def get_weight(self) -> float:
+        logger.info(f"{self.__class__.__name__} :: def get_weight")
+        """Get the filter's weight."""
+        return self.weight
+    
+    def set_weight(self, weight: float) -> None:
+        logger.info(f"{self.__class__.__name__} :: def set_weight")
+        """Set the filter's weight."""
+        self.weight = weight
+        self.logger.info(f"{self.name} filter weight set to {weight}")
+    
+    def validate_video(self, video: Dict[str, Any]) -> bool:
+        logger.info(f"{self.__class__.__name__} :: def validate_video")
+        """
+        Validate if a video has all required fields.
+        
+        Args:
+            video: Dictionary containing video information
+            
+        Returns:
+            bool: True if video is valid, False otherwise
+        """
+        required_fields = ['id', 'title', 'duration']
+        for field in required_fields:
+            if field not in video:
+                self.logger.warning(f"Video missing required field: {field}")
+                return False
+        return True
+    
+    def _split_text(self, text: str, max_length: int = 512) -> List[str]:
+        """
+        Divide o texto em chunks menores para processamento usando o tokenizer do BERT.
+        Garante que cada chunk tenha no máximo max_length tokens.
+        """
+        # Remove espaços extras e quebras de linha
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        # Tokeniza o texto
+        tokens = self.tokenizer.tokenize(text)
+        chunks = []
+        current_chunk = []
+        current_length = 0
+        
+        for token in tokens:
+            current_chunk.append(token)
+            current_length += 1
+            
+            if current_length >= max_length:
+                # Converte os tokens de volta para texto e adiciona ao chunk
+                chunk_text = self.tokenizer.convert_tokens_to_string(current_chunk)
+                chunks.append(chunk_text)
+                current_chunk = []
+                current_length = 0
+                
+        # Adiciona o último chunk se houver tokens restantes
+        if current_chunk:
+            chunk_text = self.tokenizer.convert_tokens_to_string(current_chunk)
+            chunks.append(chunk_text)
+            
+        return chunks 

@@ -11,7 +11,7 @@ from .filters.duration import DurationFilter
 from .filters.age_rating import AgeRatingFilter
 from .filters.educational import EducationalFilter
 from .filters.toxicity import ToxicityFilter
-from .filters.language import LanguageFilter
+from .filters.inappropriate import inappropriateFilter
 from .filters.diversity import DiversityFilter
 from .filters.interactivity import InteractivityFilter
 from .filters.engagement import EngagementFilter
@@ -73,7 +73,7 @@ filter_manager.register_filter("Duração", DurationFilter())
 filter_manager.register_filter("Faixa Etária", AgeRatingFilter())
 filter_manager.register_filter("Educacional", EducationalFilter())
 filter_manager.register_filter("Toxicidade", ToxicityFilter())
-filter_manager.register_filter("Linguagem", LanguageFilter())
+filter_manager.register_filter("Linguagem", inappropriateFilter())
 filter_manager.register_filter("Diversidade", DiversityFilter())
 filter_manager.register_filter("Interatividade", InteractivityFilter())
 filter_manager.register_filter("Engajamento", EngagementFilter())

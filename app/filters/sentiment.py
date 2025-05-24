@@ -46,8 +46,8 @@ class SentimentFilter(BaseFilter):
         )
         
         
-        self.model = AutoModelForSequenceClassification.from_pretrained("GargulaCapixava/ModeloLexiconPT")
-        self.tokenizer = AutoTokenizer.from_pretrained("GargulaCapixava/ModeloLexiconPT")
+        self.model = AutoModelForSequenceClassification.from_pretrained("neuralmind/bert-base-portuguese-cased")
+        self.tokenizer = AutoTokenizer.from_pretrained("neuralmind/bert-base-portuguese-cased")
         
         # Mapeamento de índices para sentimentos
         self.sentiment_map = {

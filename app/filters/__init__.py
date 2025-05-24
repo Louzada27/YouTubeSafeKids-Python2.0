@@ -5,7 +5,7 @@ from .duration import DurationFilter
 from .age_rating import AgeRatingFilter
 from .educational import EducationalFilter
 from .toxicity import ToxicityFilter
-from .language import LanguageFilter
+from .inappropriate import inappropriateFilter
 from .diversity import DiversityFilter
 from .interactivity import InteractivityFilter
 from .engagement import EngagementFilter
@@ -20,6 +20,7 @@ __all__ = [
     'EducationalFilter',
     'ToxicityFilter',
     'LanguageFilter',
+    'inappropriateFilter'
     'DiversityFilter',
     'InteractivityFilter',
     'EngagementFilter',

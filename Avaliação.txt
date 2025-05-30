@@ -59,6 +59,8 @@ Tóxico:
   F1-Score: 0.9673
 
 
+
+--------------------------------------------------------
   
 PS C:\Users\USER_27\Downloads\YouTubeSafeKids-Python> 
 
@@ -67,3 +69,40 @@ Precision: 76.44%
 Recall: 78.03%
 F1-Score: 77.23%
 Threshold: 0.7
+
+
+
+
+
+📊 Métricas Gerais de Avaliação
+Acurácia: 91,75%
+
+Precisão (macro): 49,42%
+
+Recall (macro): 44,24%
+
+F1-score (macro): 40,45%
+
+Hamming Loss: 8,25%
+
+Jaccard Score: 64,09%
+
+📌 Métricas Micro (Média Global)
+Precisão (micro): 69,63%
+
+Recall (micro): 83,15%
+
+F1-score (micro): 75,79%
+
+🔍 Métricas Por Classe
+Classe	Precisão	Recall	F1-score
+health	0.238	0.128	0.167
+ideology	0.551	0.757	0.638
+insult	0.804	1.000	0.891
+lgbtqphobia	0.390	0.564	0.461
+other_lifestyle	0.444	0.118	0.186
+physical_aspects	0.464	0.470	0.467
+profanity_obscene	0.763	0.779	0.771
+racism	1.000	0.043	0.083
+sexism	0.288	0.565	0.381
+xenophobia	0.000	0.000	0.000

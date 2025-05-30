@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> {% block
+    extra_css %}{% endblock %}
 </head>
 
 <body class="flex flex-col min-h-screen bg-gray-100">
@@ -23,16 +24,16 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <a href="/" class="text-2xl font-bold text-blue-700 flex items-center">
-                        <img src="{{ url_for('static', path='img/logo.svg') }}" alt="YouTube Safe Kids Logo" class="h-10 mr-3"> YouTube Safe Kids
+                        <img src="{{ url_for('static', path='img/logo.svg') }}" alt="YouTube Safe Kids Logo"
+                            class="h-10 mr-3"> YouTube Safe Kids
                     </a>
                 </div>
                 <div class="flex items-center">
-                    <a href="#" class="text-gray-600 hover:text-purple-600 mx-4">
+                    <a href="/sobre" class="text-gray-600 hover:text-purple-600 mx-4">
                         <i class="fas fa-info-circle mr-1"></i> Sobre
-                    </a>
-                    <a href="#" class="text-gray-600 hover:text-purple-600">
-                        <i class="fas fa-question-circle mr-1"></i> Ajuda
-                    </a>
+                        <a href="#" class="text-gray-600 hover:text-purple-600">
+                            <i class="fas fa-question-circle mr-1"></i> Ajuda
+                        </a>
                 </div>
             </div>
         </nav>

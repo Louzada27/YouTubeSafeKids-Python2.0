@@ -53,13 +53,23 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Templates
 templates = Jinja2Templates(directory="app/templates")
-
+static = Jinja2Templates(directory="app/static")
 # Register API routes
 app.include_router(
     videos.router,
     prefix=settings.API_V1_STR + "/videos",
     tags=["videos"]
 )
+
+@app.get("/sobre", response_class=HTMLResponse)
+async def sobre(request: Request):
+    logger.info("Acessando página Sobre")
+    return static.TemplateResponse(
+        "sobre.html",
+        {
+            "request": request
+        }
+    )
 
 # Log registered routes
 logger.info("Rotas registradas:")

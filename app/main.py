@@ -109,9 +109,10 @@ async def home(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(settings.PORT) if settings.PORT else 8000
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=settings.PORT,
+        port=port,
         reload=True
     ) 

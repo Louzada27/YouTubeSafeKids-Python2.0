@@ -109,10 +109,15 @@ async def home(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(settings.PORT) if settings.PORT else 8000
+    import os
+    
+    # Get port from environment variable or use default
+    port = int(os.getenv("PORT", 8000))
+    
+    # Run the application
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host="0.0.0.0",  # This is important for Render
         port=port,
-        reload=True
+        reload=False  # Set to False for production
     ) 

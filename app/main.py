@@ -111,8 +111,8 @@ if __name__ == "__main__":
     import uvicorn
     import os
     
-    # Get port from environment variable or use default
-    port = int(os.getenv("PORT", 8000))
+    # Get port from environment variable or use Render's default
+    port = int(os.getenv("PORT", 10000))
     
     # Run the application
     uvicorn.run(

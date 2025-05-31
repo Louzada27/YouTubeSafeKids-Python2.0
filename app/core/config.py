@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     YOUTUBE_API_KEY: str
     PORT: int = 10000
+    HOST: str = "0.0.0.0"
+    RELOAD: bool = True
+    HUGGINGFACE_HUB_TOKEN: str
+    MODEL_PATH: str = "./ModeloToxidade"
 
     FILTER_WEIGHTS: ClassVar[Dict[str, float]] = {
         "duration": 1.0,

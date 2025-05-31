@@ -116,8 +116,8 @@ if __name__ == "__main__":
     
     # Run the application
     uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",  # This is important for Render
+        app,  # Use the app instance directly
+        host="0.0.0.0",
         port=port,
-        reload=False  # Set to False for production
+        reload=False
     ) 

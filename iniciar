@@ -1,0 +1,7 @@
+python -m uvicorn app.main:app --reload --log-level debug
+
+
+Tunel ngrok
+cd C:\ProgramData\chocolatey\bin
+.\ngrok.exe http 8000
+
